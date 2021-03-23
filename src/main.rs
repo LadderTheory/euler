@@ -205,6 +205,37 @@ fn main() {
 				r.to_string()
 			}),
 		),
+        (//10
+            String::from("Find the sum of all the primes below two million."),
+            Box::new(|| {
+                let mut primes = vec![2];
+                let mut count = 3 as u64;
+
+                let mut sum = 2;
+                
+                while count < 2000000 {
+                    let mut is_prime = true;
+                    for i in primes.clone() {
+                        if count % i == 0 {
+                            is_prime = false;
+                            break;
+                        }
+                        if i*i > count {
+                            break;
+                        }
+                    }
+
+                    if is_prime {
+                        primes.push(count);
+                        sum += count;
+                    }
+
+                    count += 2;
+                }
+
+                sum.to_string()
+            }),
+        ),
 		(//template
 			String::from("Coming Soon"),
 			Box::new(|| {
