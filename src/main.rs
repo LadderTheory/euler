@@ -1,4 +1,4 @@
-use std::{io::{Write}, iter::Product};
+use std::{io::{Write}};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn main() {
@@ -208,32 +208,22 @@ fn main() {
         (//10
             String::from("Find the sum of all the primes below two million."),
             Box::new(|| {
-                let mut primes = vec![2];
-                let mut count = 3 as u64;
+                let mut primes = (2..2000000).collect::<Vec<u64>>();
+				let mut sum = 0;
 
-                let mut sum = 2;
-                
-                while count < 2000000 {
-                    let mut is_prime = true;
-                    for i in primes.clone() {
-                        if count % i == 0 {
-                            is_prime = false;
-                            break;
-                        }
-                        if i*i > count {
-                            break;
-                        }
-                    }
+				//sieve
+				for i in 0..primes.len() {
+					let n = primes[i] as usize;
+					if n != 0 {
+						sum += n;
 
-                    if is_prime {
-                        primes.push(count);
-                        sum += count;
-                    }
+						for j in ((i+n)..primes.len()).step_by(n) {
+							primes[j] = 0;
+						}
+					}
+				}
 
-                    count += 2;
-                }
-
-                sum.to_string()
+				sum.to_string()
             }),
         ),
 		(//template
