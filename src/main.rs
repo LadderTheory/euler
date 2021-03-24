@@ -1,8 +1,12 @@
-use std::{io::{Write}};
+use core::f32;
+use std::{io::{Write}, collections::HashMap};
+use num::{Num, NumCast, FromPrimitive};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn main() {
-	let euler: Vec<(String, Box<dyn Fn() -> String>)> = vec![
+	let mut euler: HashMap<usize, (String, Box<dyn Fn() -> String>)> = HashMap::new();
+	euler.insert(
+		1,
 		(//1
 			String::from("Find the sum of all the multiples of 3 or 5 below 1000."),
 			Box::new(|| {
@@ -15,7 +19,10 @@ fn main() {
 
 				sum.to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		2,
 		(//2
 			String::from("By considering the terms in the Fibonacci sequence whose values do not exceed four million, find the sum of the even-valued terms."),
 			Box::new(|| {
@@ -36,7 +43,10 @@ fn main() {
 
 				sum.to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		3,
 		(//3
 			String::from("What is the largest prime factor of the number 600851475143?"),
 			Box::new(|| {
@@ -56,7 +66,10 @@ fn main() {
 				
 				(*factors.last().unwrap() as i32).to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		4,
 		(//4
 			String::from("Find the largest palindrome made from the product of two 3-digit numbers."),
 			Box::new(|| {
@@ -98,6 +111,9 @@ fn main() {
 				r.to_string()
 			}),
 		),
+	);
+	euler.insert(
+		5,
 		(//5
 			String::from("What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?"),
 			Box::new(|| {
@@ -112,7 +128,10 @@ fn main() {
 
 				r.to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		6,
 		(//6
 			String::from("Find the difference between the sum of the squares of the first one hundred natural numbers and the square of the sum."),
 			Box::new(|| {
@@ -123,7 +142,10 @@ fn main() {
 
 				(square_of_sum - sum_of_squares).to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		7,
 		(//7
 			String::from("What is the 10,001st prime number?"),
 			Box::new(|| {
@@ -153,7 +175,10 @@ fn main() {
 
 				(*primes.last().unwrap()).to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		8,
 		(//8
 			String::from("Find the thirteen adjacent digits in the 1000-digit number that have the greatest product. What is the value of this product?"),
 			Box::new(|| {
@@ -178,33 +203,60 @@ fn main() {
 				
 				(largest.1).to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		9,
 		(//9
 			String::from("There exists exactly one Pythagorean triplet for which a + b + c = 1000. Find the product abc."),
 			Box::new(|| {
-				let f = |(u,v)| -> [i32; 3] {//snagged this formula from https://www.youtube.com/watch?v=QJYmyhnaaek
-					let a = (u*u) - (v*v);
-					let b = 2 * u * v;
-					let c = (u*u) + (v*v);
+				let find_k = |h,s| {//snagged this formula from https://www.youtube.com/watch?v=QJYmyhnaaek
+					// a = h^2 - k^2;
+					// b = 2hk;
+					// c = h^2 + k^2;
+					// a + b + c = 2(h^2 hk) = s
+					// formula to find k from h & s:
+					// -h + (s/2h) = k
 
-					[a,b,c]
+
+					(0-h) + (s/(2*h))
 				};
 
-				let mut r: i32 = 0;
+				let find_sum = |h,k| {
+					2 * ((h*h) + (h*k))
+				};
 
-				'outer: for x in 1.. {
-					for y in 1..x {
-						let triplet = f((x,y));
-						if triplet.iter().sum::<i32>() == 1000{
-							r = triplet.iter().product();
-							break 'outer;
+				let find_product = |h: i32,k: i32| {
+					// abc = (h^2 - k^2)(2hk)(h^2 + k^2) = 2h^5k - 2hk^5
+					(2 * h.pow(5) * k) - (2 * h * k.pow(5))
+				};
+
+				let mut hk: Vec<i32> = Vec::new();
+
+				let mut r: i32= 0;
+
+				let sum = 1000;
+
+				for h in 2.. {
+					let k = find_k(h, sum);
+					if k >= 1 {
+						if find_sum(h,k) == sum {
+							if k % 1 == 0 {
+								hk = vec![h,k];
+							}
 						}
+					}else{
+						break;
 					}
+					
 				}
 
-				r.to_string()
+				find_product(hk[0],hk[1]).to_string()
 			}),
-		),
+		)
+	);
+	euler.insert(
+		10,
         (//10
             String::from("Find the sum of all the primes below two million."),
             Box::new(|| {
@@ -225,37 +277,39 @@ fn main() {
 
 				sum.to_string()
             }),
-        ),
-		(//template
-			String::from("Coming Soon"),
-			Box::new(|| {
-				7.to_string()
-			}),
-		),
-	];
+		)
+	);
 
 	let args = std::env::args().collect::<Vec<String>>();
 
 	let write_problem = |i: usize| {
-		write_text(format!("{}> {}", i+1, euler[i].0));
-		write_num(euler[i].1().to_string());
+		match euler.get(&i) 
+		{
+			Some(x) => {
+				write_text(format!("{}> {}", i, x.0));
+				write_num(x.1().to_string());
+			},
+			None => write_text(format!("{}> PROBLEM NOT SOLVED", i)),
+			//write_text(format!("{}> {}", i+1, euler[i].0));
+			//write_num(euler[i].1().to_string());
+		}
+		
 	};
+
+	let mut keys= euler.keys().cloned().collect::<Vec<usize>>();
+	keys.sort();
 
 	match args.len() {
 		1 => {
-			for i in 0..euler.len() {
+			for i in keys {
 				write_problem(i);
 			}
 		},
 		2 => {
 			match args[1].parse::<usize>() {
 				Ok(n) => {
-					if (0..euler.len()).any(|x| x == n-1) {
-						write_problem(n-1);
-					}else{
-						println!("Error: invalid problem number\nPlease input a number between ");
-					}
-				},
+					write_problem(n);
+				}
 				_ => panic!("Error: Argument must be a valid integer"),
 			}
 		},
@@ -287,8 +341,8 @@ fn write_color(fg: Color) {
 	let f = || {
 		let mut stdout = StandardStream::stdout(ColorChoice::Always);
 		let new_spec = ColorSpec::new()
-													.set_fg(Some(fg))
-													.clone();
+											.set_fg(Some(fg))
+											.clone();
 		stdout.set_color(&new_spec)?;
 		write!(&mut stdout, "")
 	};
