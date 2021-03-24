@@ -356,6 +356,18 @@ fn main() {
 			})
 		)
 	);
+	euler.insert(
+		14,
+		(
+			String::from("Which starting number, under one million, produces the longest chain?"),
+			Box::new(|| {
+				let sequence = |x| {
+					
+				};
+				format!("not done yet!")
+			})
+		)
+	);
 
 	let args = std::env::args().collect::<Vec<String>>();
 
