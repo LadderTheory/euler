@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::{Write}, u128, usize};
+use std::{collections::HashMap, io::{Write}};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn main() {
@@ -361,10 +361,35 @@ fn main() {
 		(
 			String::from("Which starting number, under one million, produces the longest chain?"),
 			Box::new(|| {
-				let sequence = |x| {
-					
+				let limit = 1000000;
+
+				let sequence = |x: u64| {
+					let mut r = x;
+					let mut steps = 1;
+
+					while r > 1 {
+						r = match r % 2 == 0 {
+							true => r/2,
+							false => (3*r) + 1,
+						};
+
+						steps += 1;
+					}
+
+					steps
 				};
-				format!("not done yet!")
+
+				let mut largest = (0,0);
+				for i in 1..limit {
+					let seqi = sequence(i as u64);
+					if largest.1 < seqi {
+						largest = (i,seqi);
+					}
+
+					//println!("{:?}", (i, largest));
+				}				
+
+				format!("{:?}", largest.0)
 			})
 		)
 	);
