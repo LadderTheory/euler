@@ -393,6 +393,34 @@ fn main() {
 			})
 		)
 	);
+	euler.insert(
+		15, 
+		(
+			format!("How many such routes are there through a 20×20 grid?"),
+			Box::new(|| {
+				// this is basically just a binomial coefficient. (n!)/(c!(n-c)!)
+				// c is the total number of right turns possible givin the grid
+				// n is the total number of directional movements required to get to the end
+				// in a 10x5 grid, you would have c = 10 and n = 15. The cooresponding equation would be (15;10) = (15!)/(10!(15-10)!)
+				
+				// these factorials pose a problem, as even u128 is not large enough. instead, we can use a falling factorial (n^k)/k!
+
+				let grid: (u64, u64) = (20,20);
+
+				let c = grid.0;
+				let n = grid.0 + grid.1;
+
+				let mut result = 1;
+
+				for i in 0..c {
+					result *= n - i;
+					result /= i + 1;
+				}
+
+				format!("{}", result)
+			})
+		)
+	);
 
 	let args = std::env::args().collect::<Vec<String>>();
 
@@ -409,12 +437,6 @@ fn main() {
 		}
 		
 	};
-
-	println!("sigma {}", sigma(
-		5,
-		Box::new(|x| 8 * x),
-		1
-	));
 
 	let mut keys= euler.keys().cloned().collect::<Vec<usize>>();
 	keys.sort();
@@ -454,10 +476,6 @@ fn write_text(arg: String) {
 ///resets the color for terminal ouptut to white
 fn reset_color() {
 	write_color(Color::White);
-}
-
-fn sigma(n: i32, a: Box<dyn Fn(i32) -> i32>, k: i32) -> i32 {
-	(k..=n).fold(0, |acc, x| acc + a(x))
 }
 
 ///changes the color of the terminal
