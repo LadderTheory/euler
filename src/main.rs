@@ -1,4 +1,7 @@
+mod bignum;
+
 use std::{collections::HashMap, io::{Write}};
+use bignum::BigNum;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn main() {
@@ -421,6 +424,20 @@ fn main() {
 			})
 		)
 	);
+	euler.insert(
+		16,
+		(
+			format!("What is the sum of the digits of the number 2^1000?"),
+			Box::from(|| {
+				// this will be a very large number, integer vector will do wonders here.
+				let a = BigNum::from(888.to_string());
+
+				println!("{} : {}", 888 + 888, a.clone() + a.clone());
+
+				format!("Not yet finished")
+			})
+		)
+	);
 
 	let args = std::env::args().collect::<Vec<String>>();
 
@@ -452,10 +469,10 @@ fn main() {
 				Ok(n) => {
 					write_problem(n);
 				}
-				_ => panic!("Error: Argument must be a valid integer"),
+				_ => eprintln!("Error: Argument must be a valid integer"),
 			}
 		},
-		_ => panic!("ERROR: invalid number of arguments"),
+		_ => eprintln!("ERROR: invalid number of arguments"),
 	}
 }
 
