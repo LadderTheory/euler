@@ -1,16 +1,18 @@
-use std::{cmp, fmt, ops::{Add, Mul}, ptr::eq, string};
+use std::{fmt, ops::{Add, AddAssign, Mul, MulAssign}};
 
 #[derive(Clone)]
 pub struct BigNum {
-	num: Vec<u8>,
+	pub num: Vec<u8>,
 }
 
+#[allow(dead_code)]
 struct BigNumIter {
     curr: BigNum,
     next: BigNum,
     limit: BigNum,
 }
 
+#[allow(dead_code)]
 impl BigNum {
     pub fn from(arg: String) -> BigNum {
         let mut big: Vec<u8> = Vec::new();
@@ -24,13 +26,13 @@ impl BigNum {
         }
     }
 
-    pub fn zero() -> BigNum{
+    pub fn zero() -> BigNum {
         BigNum {
             num: vec![0]
         }
     }
 
-    pub fn one() -> BigNum{
+    pub fn one() -> BigNum {
         BigNum {
             num: vec![1]
         }
@@ -41,13 +43,7 @@ impl Add for BigNum {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut result = vec![];
-
-        for x in &self.num {
-            result.push(*x);
-        }
-
-        println!("debug 1: {} {:?}", &self, result);
+        let mut result = self.num.clone();
 
         for i in 0..rhs.num.len() {
             if i < result.len() {
@@ -57,8 +53,6 @@ impl Add for BigNum {
             }
         }
 
-        println!("debug 2: {:?}", (rhs, result.clone()));
-
         let mut carry = 0;
         for i in 0..result.len() {
             result[i] += carry;
@@ -67,19 +61,71 @@ impl Add for BigNum {
             carry = result[i] / 10;
 
             result[i] = rem;
-
-            println!("debug 3: {:?}", (rem, carry, &result));
         }
 
         if carry > 0 {
             result.push(carry);
         }
 
-        println!("{:?}", result);
-
         BigNum {
             num: result
         }
+    }
+}
+
+impl AddAssign for BigNum {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = self.clone() + rhs;
+    }
+}
+
+impl Mul for BigNum {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        if rhs == BigNum::one() {
+            return self;
+        }
+
+        if rhs == BigNum::zero() || self == BigNum::zero() {
+            return BigNum::zero();
+        }
+
+        let mut partials = vec![];
+        for x in self.clone().num {
+            let mapped = rhs.num.iter().map(|a| a * x).collect::<Vec<u8>>();
+            let mut partial = vec![];
+            let mut carry = 0;
+            for y in mapped {
+                let a = y + carry;
+
+                let rem = a % 10;
+                carry = a / 10;
+                partial.push(rem);
+            }
+            if carry > 0 {
+                partial.push(carry);
+            }
+            partials.push(partial);
+        }
+
+        //println!("p> {}*{} = {:?}", self, rhs, partials);
+
+        let mut returnme = BigNum::zero();
+
+        for (i,p) in partials.iter().enumerate() {
+            let mut big_p = vec![0;i];
+            big_p.extend(p);
+            returnme += BigNum{num:big_p};
+        }
+
+        returnme
+    }
+}
+
+impl MulAssign for BigNum {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = self.clone() * rhs
     }
 }
 
@@ -131,13 +177,22 @@ mod tests {
 
     #[test]
     fn multiplication() {
-        let iter = 1..100;
-        let nums = iter.clone().map(|x| BigNum::from(x.to_string()));
-        assert_eq!(
-            iter.sum::<u32>().to_string(), 
-            nums.fold(BigNum::zero(), |acc, x| acc * x).to_string()
-        );
+        let cases = vec![
+            vec![3,4],
+            vec![132,345],
+            vec![13,456,7,3],
+        ];
+
+        for c in cases {
+            let control = c.iter().fold(1,|acc,x| acc * x);
+            let result = c.iter()
+                                    .map(|x| BigNum::from(x.to_string()))
+                                    .collect::<Vec<BigNum>>()
+                                    .iter()
+                                    .fold(BigNum::one(), |acc, x| acc * x.clone());
+            assert_eq!(control.to_string(), result.to_string());
+        }
     }
 
-    //todo: add and test iterator functions
+    // todo: add and test iterator functions
 }

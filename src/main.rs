@@ -1,7 +1,7 @@
 mod bignum;
 
 use std::{collections::HashMap, io::{Write}};
-use bignum::BigNum;
+use num::{BigUint};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn main() {
@@ -51,7 +51,7 @@ fn main() {
 		(
 			String::from("What is the largest prime factor of the number 600851475143?"),
 			Box::new(|| {
-				let num: u64 = 600851475143;
+				let num= 600851475143u64;
 				let mut factors = vec![];
 
 				let mut n = num;//numerator
@@ -429,12 +429,14 @@ fn main() {
 		(
 			format!("What is the sum of the digits of the number 2^1000?"),
 			Box::from(|| {
-				// this will be a very large number, integer vector will do wonders here.
-				let a = BigNum::from(888.to_string());
+				let mut product = BigUint::from(2u32);
+				product = product.pow(1000);
 
-				println!("{} : {}", 888 + 888, a.clone() + a.clone());
+				let sum = product.to_string().chars().map(|c| {
+					c.to_digit(10).unwrap()
+				}).collect::<Vec<u32>>().iter().sum::<u32>();
 
-				format!("Not yet finished")
+				format!("{}", sum)
 			})
 		)
 	);
@@ -449,8 +451,6 @@ fn main() {
 				write_num(x.1().to_string());
 			},
 			None => write_text(format!("{}> PROBLEM NOT SOLVED", i)),
-			//write_text(format!("{}> {}", i+1, euler[i].0));
-			//write_num(euler[i].1().to_string());
 		}
 		
 	};
